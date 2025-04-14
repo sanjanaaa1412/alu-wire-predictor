@@ -82,9 +82,9 @@
     <div class="row h-100">
       <div class="col-md-2 sidebar d-flex flex-column justify-content-between">
         <div>
-          <button class="btn-sidebar active" onclick="if (!hasPredicted) showPredictProperties()">Predict Properties</button>
+          <button class="btn-sidebar" onclick="showPredictProperties()">Predict Properties</button>
           <button class="btn-sidebar" onclick="showBatchHistory()">Batch History</button>
-          <button class="btn-sidebar" onclick="location.href='Dashboard.html'">Dashboard</button>
+          <button class="btn-sidebar" onclick="location.href='/dashboard'">Dashboard</button>
         </div>
 
         <!-- Profile Section -->
@@ -336,6 +336,8 @@
 
     async function showBatchHistory() {
       document.getElementById("results").innerHTML = '';
+    
+      document.getElementById("content-area").innerHTML = `
         <div class="card shadow">
           <h2 class="text-center mb-4">📄 Batch History</h2>
     
@@ -368,7 +370,7 @@
         console.error(err);
       }
     }
-     
+    
 
 function generateBatchSection(worker, date, batch, records) {
   const id = `batch-${worker}-${batch}`.replace(/\s+/g, '-');
