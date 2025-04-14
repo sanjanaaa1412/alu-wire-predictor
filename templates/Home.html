@@ -121,9 +121,11 @@
         e.preventDefault();
 
         const workerName = document.getElementById("workerName").value;
+        const workerId = document.getElementById("workerId").value;
         const batchNumber = document.getElementById("batchNumber").value;
 
         localStorage.setItem("workerName", workerName);
+        localStorage.setItem("workerId", workerId);
         localStorage.setItem("batchNumber", batchNumber);
 
         //window.location.href = "Predict copy 2.html";
