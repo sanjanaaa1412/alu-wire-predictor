@@ -89,7 +89,7 @@
 
         <!-- Profile Section -->
         <div class="d-flex align-items-center p-2 mt-4" style="cursor: pointer;" onclick="showWorkerInfo()">
-          <img src="\static\worker.png" alt="Worker" style="width: 40px; height: 40px; border-radius: 50%; background-color: white; padding: 2px;" />
+          <img src="{{ url_for('static', filename='worker.png') }}" alt="Worker" style="width: 40px; height: 40px; border-radius: 50%; background-color: white; padding: 2px;" />
           <span class="ms-2 text-white" style="font-size: 0.9rem;">Your Profile</span>
         </div>
       </div>
@@ -109,12 +109,7 @@
           <h5 class="modal-title" id="workerModalLabel">👷‍♂️ Worker Profile</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
-          <p><strong>Name:</strong> Rakesh Sharma</p>
-          <p><strong>ID:</strong> WRD-0042</p>
-          <p><strong>Role:</strong> Line Supervisor</p>
-          <p><strong>Shift:</strong> Night (8PM – 4AM)</p>
-        </div>
+        <div class="modal-body" id="workerProfileBody"></div>
       </div>
     </div>
   </div>
@@ -126,9 +121,26 @@
 
 
     function showWorkerInfo() {
+      const name = localStorage.getItem("workerName") || "Unknown";
+      const workerId = localStorage.getItem("workerId") || "N/A";  // ✅ Get from localStorage
+      const batch = localStorage.getItem("batchNumber") || "N/A";
+    
+      const hour = new Date().getHours();
+      const shift = (hour >= 20 || hour < 8) ? "Night (8PM – 8AM)" : "Day (8AM – 8PM)";
+    
+      const profileHTML = `
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>ID:</strong> ${workerId}</p>
+        <p><strong>Role:</strong> Line Supervisor</p>
+        <p><strong>Shift:</strong> ${shift}</p>
+      `;
+    
+      document.getElementById("workerProfileBody").innerHTML = profileHTML;
+    
       const modal = new bootstrap.Modal(document.getElementById('workerModal'));
       modal.show();
     }
+    
 
     // ✅ Updated Classification Logic (Only 9.5 and 11.5 allowed)
     function classifyGrade(conductivity, diameter) {
@@ -322,45 +334,41 @@
       document.getElementById('results').innerHTML = '';
     }
 
-    function showBatchHistory() {
-      //document.getElementById('content-area').innerHTML = '<div class="card"><h4>📦 Batch History coming soon...</h4></div>';
-      document.getElementById('content-area').innerHTML = `
-    <div class="card shadow">
-      <h2 class="text-center mb-4">📄 Batch History</h2>
-
-      <!-- Filters -->
-      <div class="row g-3 mb-4">
-        <div class="col-md-3">
-          <input type="text" class="form-control" placeholder="Search by Worker" id="filterWorker">
+    async function showBatchHistory() {
+      document.getElementById("results").innerHTML = '';
+        <div class="card shadow">
+          <h2 class="text-center mb-4">📄 Batch History</h2>
+    
+          <!-- Filters -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-3"><input type="text" class="form-control" placeholder="Search by Worker" id="filterWorker"></div>
+            <div class="col-md-3"><input type="date" class="form-control" id="filterDate"></div>
+            <div class="col-md-3"><input type="text" class="form-control" placeholder="Batch No" id="filterBatch"></div>
+            <div class="col-md-3 d-flex gap-2">
+              <button class="btn btn-primary w-100" onclick="applyFilters()">Apply Filter</button>
+              <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+            </div>
+          </div>
+    
+          <div id="batchHistoryList"></div>
         </div>
-        <div class="col-md-3">
-          <input type="date" class="form-control" id="filterDate">
-        </div>
-        <div class="col-md-3">
-          <input type="text" class="form-control" placeholder="Batch No" id="filterBatch">
-        </div>
-        <div class="col-md-3 d-flex gap-2">
-          <button class="btn btn-primary w-100" onclick="applyFilters()">Apply Filter</button>
-          <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
-        </div>
-      </div>
-
-      <!-- History Records -->
-      <div id="batchHistoryList">
-
-        ${generateBatchSection("Rahul", "2025-04-09", "A42", [
-          { time: "10:03 AM", uts: 123, elong: 8.1, cond: 62, status: "Pass" },
-          { time: "11:15 AM", uts: 116, elong: 7.5, cond: 61.8, status: "Pass" },
-        ])}
-
-        ${generateBatchSection("Asha", "2025-04-08", "B17", [
-          { time: "01:20 PM", uts: 98.4, elong: 6.9, cond: 60.4, status: "Fail" },
-        ])}
-
-      </div>
-    </div>
-  `;
-}
+      `;
+    
+      try {
+        const res = await fetch("/get_history");
+        const history = await res.json();
+    
+        history.forEach(entry => {
+          const section = generateBatchSection(entry.worker, entry.date, entry.batch, entry.records);
+          document.getElementById("batchHistoryList").innerHTML += section;
+        });
+    
+      } catch (err) {
+        alert("⚠️ Failed to load batch history.");
+        console.error(err);
+      }
+    }
+     
 
 function generateBatchSection(worker, date, batch, records) {
   const id = `batch-${worker}-${batch}`.replace(/\s+/g, '-');

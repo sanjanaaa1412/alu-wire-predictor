@@ -149,6 +149,42 @@ def save_status():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
+@app.route("/get_history", methods=["GET"])
+def get_history():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("""
+        SELECT worker_name, batch_number, date, uts, elongation, conductivity, status
+        FROM predictions ORDER BY date DESC LIMIT 20
+    """)
+    rows = c.fetchall()
+    conn.close()
+
+    result = {}
+    for worker, batch, date, uts, elong, cond, status in rows:
+        key = (worker, date[:10], batch)
+        if key not in result:
+            result[key] = []
+        result[key].append({
+            "time": date[11:],
+            "uts": uts,
+            "elong": elong,
+            "cond": cond,
+            "status": status
+        })
+
+    # Format for frontend
+    formatted = []
+    for (worker, date, batch), records in result.items():
+        formatted.append({
+            "worker": worker,
+            "date": date,
+            "batch": batch,
+            "records": records
+        })
+
+    return jsonify(formatted)
+
 # 🌐 Serve HTML pages
 @app.route("/")
 def home():
