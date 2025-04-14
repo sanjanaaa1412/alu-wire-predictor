@@ -154,24 +154,25 @@ def get_history():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute("""
-        SELECT worker_name, batch_number, date, uts, elongation, conductivity, status
+        SELECT worker_name, batch_number, date, uts, elongation, conductivity, grade, status
         FROM predictions ORDER BY date DESC LIMIT 20
     """)
     rows = c.fetchall()
     conn.close()
 
     result = {}
-    for worker, batch, date, uts, elong, cond, status in rows:
+    for worker, batch, date, uts, elong, cond, grade, status in rows:
         key = (worker, date[:10], batch)
         if key not in result:
             result[key] = []
         result[key].append({
-            "time": date[11:],
-            "uts": uts,
-            "elong": elong,
-            "cond": cond,
-            "status": status
-        })
+        "time": date[11:],
+        "uts": round(uts, 2),
+        "elong": round(elong, 2),
+        "cond": round(cond, 2),
+        "status": status,
+        "grade": grade  # ✅ Add this
+    })
 
     # Format for frontend
     formatted = []
