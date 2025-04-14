@@ -1,10 +1,11 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import pickle
 import numpy as np
 import pandas as pd
 import sqlite3
 from datetime import datetime
+import joblib
 
 app = Flask(__name__)
 CORS(app)
@@ -16,12 +17,12 @@ with open("lgb_model_elongation.pkl", "rb") as f:
     model_elong = pickle.load(f)
 with open("lgb_model_conductivity.pkl", "rb") as f:
     model_cond = pickle.load(f)
-import joblib
+
 scaler = joblib.load("scaler.pkl")
+
 # ⛔ Replace this with your actual feature column names (must match model training)
 features = joblib.load("features.pkl")
 feature_names = features.columns.tolist()
-# 📈 Load database
 
 # 📦 Setup SQLite DB
 DB_FILE = "predictions.db"
@@ -65,11 +66,8 @@ def classify_grade(conductivity, diameter):
             return "WC12"
     return "Unknown"
 
-#@app.route("/static\Predict copy 2.html", methods=["POST"])
 @app.route("/predict", methods=["POST"])
 def predict():
-    # your logic
-
     try:
         data = request.json
 
@@ -124,6 +122,45 @@ def predict():
 
     except Exception as e:
         return jsonify({"error": str(e)})
+
+@app.route("/save", methods=["POST"])
+def save_status():
+    try:
+        data = request.json
+        worker_name = data.get("worker_name")
+        batch_number = data.get("batch_number")
+        status = data.get("status")
+
+        if not all([worker_name, batch_number, status]):
+            return jsonify({"success": False, "error": "Missing fields"})
+
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute('''
+            UPDATE predictions
+            SET status = ?
+            WHERE worker_name = ? AND batch_number = ?
+            ORDER BY id DESC LIMIT 1
+        ''', (status, worker_name, batch_number))
+        conn.commit()
+        conn.close()
+
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+# 🌐 Serve HTML pages
+@app.route("/")
+def home():
+    return render_template("Home.html")
+
+@app.route("/predict_page")
+def predict_page():
+    return render_template("Predict copy 2.html")
+
+@app.route("/dashboard")
+def dashboard():
+    return render_template("Dahsboard2.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

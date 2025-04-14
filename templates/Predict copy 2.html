@@ -269,10 +269,34 @@
       }
     }
 
-    function saveResults() {
-      alert("✅ Results saved successfully!\n(This is a placeholder. Hook to backend or download feature.)");
+    async function saveResults() {
+      const statusBtn = document.getElementById("statusToggle");
+      const status = statusBtn.innerText.includes("Fail") ? "Fail" : "Pass";
+    
+      const payload = {
+        worker_name: localStorage.getItem("workerName"),
+        batch_number: localStorage.getItem("batchNumber"),
+        status: status,
+      };
+    
+      try {
+        const response = await fetch("http://127.0.0.1:5000/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+    
+        const result = await response.json();
+        if (result.success) {
+          alert("✅ Results saved successfully!");
+        } else {
+          alert("⚠️ Save failed.");
+        }
+      } catch (err) {
+        alert("❌ Error saving results: " + err.message);
+      }
     }
-
+    
     function fillRandom() 
     {
       const ranges = {
