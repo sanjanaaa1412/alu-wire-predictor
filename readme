@@ -1,0 +1,26 @@
+📁 project-root/
+├── Predict copy.html
+├── Dashboard.html
+├── worker.png
+└── wire_rod_background.jpg
+
+
+
+📦 How to Connect It to Predict copy.html
+Inside Predict copy.html, update the showDashboard() function:
+
+js
+Copy
+Edit
+function showDashboard() {
+  fetch("Dashboard.html")
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("content-area").innerHTML = html;
+    })
+    .catch(err => {
+      console.error("Error loading dashboard:", err);
+      document.getElementById("content-area").innerHTML = "<div class='alert alert-danger'>Failed to load dashboard.</div>";
+    });
+}
+✅ This will fetch and insert the Dashboard.html into your content pane.
