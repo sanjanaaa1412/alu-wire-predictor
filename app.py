@@ -156,11 +156,11 @@ def home():
 
 @app.route("/predict_page")
 def predict_page():
-    return render_template("Predict copy 2.html")
+    return render_template("predict_page.html")
 
 @app.route("/dashboard")
 def dashboard():
-    return render_template("Dahsboard2.html")
+    return render_template("Dashboard.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
