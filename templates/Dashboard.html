@@ -128,30 +128,35 @@
     async function fetchDashboardData() {
       const res = await fetch("/get_history");
       const data = await res.json();
-
+    
       const workerSet = new Set();
       const batchSet = new Set();
       const grades = {};
       const status = { Pass: 0, Fail: 0 };
+      const workerCounts = {};
       let predictionCount = 0;
-
+    
       data.forEach(entry => {
         workerSet.add(entry.worker);
         batchSet.add(entry.batch);
+        workerCounts[entry.worker] = (workerCounts[entry.worker] || 0) + entry.records.length;
+    
         entry.records.forEach(r => {
           grades[r.grade] = (grades[r.grade] || 0) + 1;
           status[r.status] = (status[r.status] || 0) + 1;
           predictionCount++;
         });
       });
-
+    
       document.getElementById("workerCount").textContent = workerSet.size;
       document.getElementById("batchCount").textContent = batchSet.size;
       document.getElementById("totalPredictions").textContent = predictionCount;
-
+    
       renderGradeChart(grades);
       renderStatusChart(status);
+      renderStar(workerCounts);
     }
+    
 
     function renderGradeChart(gradeCounts) {
       new Chart(document.getElementById("gradeChart"), {
@@ -216,6 +221,12 @@
     }
 
     document.addEventListener("DOMContentLoaded", fetchDashboardData);
+
+    function renderStar(workerCounts) {
+      const topWorker = Object.entries(workerCounts).sort((a, b) => b[1] - a[1])[0];
+      document.querySelector(".star-box .highlight").textContent = topWorker ? topWorker[0] : "N/A";
+    }
+    
   </script>
 </body>
 </html>

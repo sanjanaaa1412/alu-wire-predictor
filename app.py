@@ -154,8 +154,8 @@ def get_history():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute("""
-        SELECT worker_name, batch_number, date, uts, elongation, conductivity, grade, status
-        FROM predictions ORDER BY date DESC LIMIT 20
+    SELECT worker_name, batch_number, date, uts, elongation, conductivity, grade, status
+    FROM predictions ORDER BY date DESC
     """)
     rows = c.fetchall()
     conn.close()
@@ -170,8 +170,9 @@ def get_history():
         "uts": round(uts, 2),
         "elong": round(elong, 2),
         "cond": round(cond, 2),
-        "status": status,
-        "grade": grade  # ✅ Add this
+        "grade": grade,
+        "status": status
+          # ✅ Add this
     })
 
     # Format for frontend
